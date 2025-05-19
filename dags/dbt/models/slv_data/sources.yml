@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: brz_data
+    database: lakehouse
+    schema: brz_data
+    tables:
+      - name: brz_tb_customers
+      - name: brz_tb_order_items
+      - name: brz_tb_order_payments
+      - name: brz_tb_orders
+      - name: brz_tb_products
