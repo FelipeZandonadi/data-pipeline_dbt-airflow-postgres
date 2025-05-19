@@ -13,3 +13,4 @@ airflow.db
 .vscode
 dags_backup/
 *.log
+target/
