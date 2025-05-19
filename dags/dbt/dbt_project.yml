@@ -29,9 +29,3 @@ models:
   lakehouse:
     # Config indicated by + and applies to all files under models/example/
     +materialized: table
-    brz_data:
-      +schema: brz_data
-    slv_data:
-      +schema: slv_data
-    gld_data:
-      +schema: gld_data
