@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: dim_product_category
+    description: "Tabela de dimensão de categorias de produtos"
+    columns:
+      - name: id_product_category_sk
+        description: "Chave primária da categoria de produto com Surrogate Key"
+        tests:
+          - not_null
+          - unique
+
+      - name: product_category_name
+        tests:
+          - not_null

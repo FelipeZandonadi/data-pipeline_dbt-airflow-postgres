@@ -15,7 +15,7 @@ WITH customer_location AS (
 )
 
 SELECT
-    cl.state || '_' || cl.city id_state_city_sk,
+    cl.state || '-' || cl.city id_state_city_sk,
     cl.state,
     cl.city
 FROM customer_location cl

@@ -20,5 +20,6 @@ models:
           - not_null
 
     tests:
-      - customer_state_pattern_field:
-          column: customer_state
+      - column_pattern_field:
+          column: 'customer_state'
+          pattern: '__'

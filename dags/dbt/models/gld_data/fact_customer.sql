@@ -72,7 +72,7 @@ WITH ranked_orders AS (
     )
 SELECT
     c.customer_unique_id id_customer_sk,
-    c.customer_state || '_' || c.customer_city key_state_city,
+    c.customer_state || '-' || c.customer_city key_state_city,
     to_char(loc.last_order_date, 'YYYYMMDD') key_last_order_date,
     qti.qty_items_purchased,
     qto.qty_orders,

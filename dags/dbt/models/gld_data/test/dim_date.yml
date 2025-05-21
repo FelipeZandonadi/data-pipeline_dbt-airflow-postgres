@@ -1,0 +1,52 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: "Tabela de dimensão de datas"
+    columns:
+      - name: id_date_sk
+        description: "Chave primária de data"
+        tests:
+          - not_null
+          - unique
+
+
+      - name: date
+        description: "Data completa"
+        tests:
+          - not_null
+
+      - name: year
+        description: "Ano da data"
+        tests:
+          - not_null
+
+      - name: month
+        description: "Mês da data"
+        tests:
+          - not_null
+      
+      - name: day
+        description: "Dia da data"
+        tests:
+          - not_null
+      
+      - name: day_of_week
+        description: "Dia da semana"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+
+      - name: quarter
+        description: "Trimestre da data"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['1', '2', '3', '4']
+
+    tests:
+      - column_pattern_field:
+          column: 'id_date_sk'
+          pattern: '________'
+

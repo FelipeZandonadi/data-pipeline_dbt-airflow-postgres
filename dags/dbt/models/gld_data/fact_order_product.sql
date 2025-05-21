@@ -14,7 +14,7 @@
 
 WITH
     source AS (
-        select order_id, product_id, seller_id, shipping_limit_date, price, freight_value, count(*) qty_item
+        select order_id, product_id, seller_id, shipping_limit_date, price price_item, freight_value, count(*) qty_item
         from slv_data.slv_tb_order_items
         group by order_id, product_id, seller_id, shipping_limit_date, price, freight_value
     ),
@@ -24,17 +24,17 @@ WITH
         group by stop.order_id
     )
 SELECT
-    stoi.order_id || '_' || stoi.product_id id_order_product_sk,
+    stoi.order_id || '-' || stoi.product_id id_order_product_sk,
     stoi.order_id id_order,
     stoi.product_id id_product,
     stoi.seller_id id_seller,
     TO_CHAR(sto.order_approved_at, 'YYYYMMDD') key_order_approved_at,
     TO_CHAR(sto.order_delivered_customer_date, 'YYYYMMDD') key_order_delivered_customer_date,
     TO_CHAR(sto.order_estimated_delivery_date, 'YYYYMMDD') key_order_estimated_delivery_date,
-    stc.customer_state || '_' || stc.customer_city key_state_city,
+    stc.customer_state || '-' || stc.customer_city key_state_city,
     sto.order_status,
     stoi.qty_item,
-    stoi.price,
+    stoi.price_item,
     stoi.freight_value,
     opi.order_amount_payment_installments
 FROM source stoi
