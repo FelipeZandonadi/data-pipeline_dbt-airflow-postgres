@@ -1,0 +1,24 @@
+version: 2
+
+models:
+  - name: slv_tb_customers
+    description: "Tabela transformada e tratada de clientes"
+    columns:
+      - name: customer_id
+        description: "Chave primária do cliente"
+        tests:
+          - not_null
+          - unique
+
+      - name: customer_unique_id
+        tests:
+          - not_null
+
+      - name: customer_state
+        description: "Estado do cliente"
+        tests:
+          - not_null
+
+    tests:
+      - customer_state_pattern_field:
+          column: customer_state

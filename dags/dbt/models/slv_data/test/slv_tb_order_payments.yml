@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: slv_tb_order_payments
+    description: "Tabela transformada e tratada de pagamentos"
+    columns:
+      - name: order_id
+        description: "Relacionamento com os pedidos"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('slv_tb_orders')
+              field: order_id
+
+      - name: payment_sequential
+        description: "Identificador único do pagamento"
+        tests:
+          - not_null
+
+      - name: payment_type
+        description: "Tipo de pagamento"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['not_defined', 'boleto', 'debit_card', 'voucher', 'credit_card']
+
+    tests:
+      - unique_combination_columns:
+          combination_of: ['order_id', 'payment_sequential']
+          description: "Verifica a combinação única de order_id e payment_sequential"
