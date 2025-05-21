@@ -1,13 +1,14 @@
 version: 2
 
-models: 
+models:
   - name: brz_tb_customers
+    description: "Tabela transformada de clientes"
     columns:
       - name: customer_id
-        data_tests:
+        description: "Chave primária do cliente"
+        tests:
           - not_null
           - unique
       - name: customer_unique_id
         data_tests:
           - not_null
-

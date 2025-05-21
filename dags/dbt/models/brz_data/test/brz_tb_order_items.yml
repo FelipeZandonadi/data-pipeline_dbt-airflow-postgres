@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: brz_tb_order_items
+    description: "Tabela transformada de itens do pedido"
+    columns:
+      - name: order_item_id
+        description: "Identificador único do item"
+        tests:
+          - not_null
+
+      - name: order_id
+        description: "Relacionamento com os pedidos"
+        tests:
+          - not_null
+
+      - name: product_id
+        description: "Relacionamento com os produtos"
+        tests:
+          - not_null
+      
+tests:
+  - unique_combination_of_columns:
+      combination_of: ['order_item_id', 'order_id']
+      description: "Verifica a combinação única de order_item_id e order_id"
+

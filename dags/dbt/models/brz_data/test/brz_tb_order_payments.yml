@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: brz_tb_order_payments
+    description: "Tabela transformada de pagamentos"
+    columns:
+      - name: order_id
+        description: "Relacionamento com os pedidos"
+        tests:
+          - not_null
+
+      - name: payment_sequential
+        description: "Identificador único do pagamento"
+        tests:
+          - not_null
+
+tests:
+  - unique_combination_of_columns:
+      combination_of: ['order_id', 'payment_sequential']
+      description: "Verifica a combinação única de order_id e payment_sequential"
