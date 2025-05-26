@@ -22,7 +22,8 @@ with DAG(dag_id='ingestion_S3_to_postgres', description="Ingestion data raw from
         output_table=Table(
             name="tb_orders",
             conn_id="postgres_conn",
-            metadata=Metadata(schema="raw", dbase="lakehouse")
+            metadata=Metadata(schema="raw", 
+                              database="lakehouse",),
         )
     )
     
@@ -32,7 +33,8 @@ with DAG(dag_id='ingestion_S3_to_postgres', description="Ingestion data raw from
         output_table=Table(
             name="tb_customers",
             conn_id="postgres_conn",
-            metadata=Metadata(schema="raw")
+            metadata=Metadata(schema="raw",
+                              database="lakehouse",),
             )
     )
     
@@ -42,7 +44,8 @@ with DAG(dag_id='ingestion_S3_to_postgres', description="Ingestion data raw from
         output_table=Table(
             name="tb_order_payments",
             conn_id="postgres_conn",
-            metadata=Metadata(schema="raw")
+            metadata=Metadata(schema="raw",
+                              database="lakehouse",),
         )
     )
     
@@ -52,7 +55,8 @@ with DAG(dag_id='ingestion_S3_to_postgres', description="Ingestion data raw from
         output_table=Table(
             name="tb_order_items",
             conn_id="postgres_conn",
-            metadata=Metadata(schema="raw")
+            metadata=Metadata(schema="raw",
+                              database="lakehouse",),
         )
     )
 
@@ -62,7 +66,8 @@ with DAG(dag_id='ingestion_S3_to_postgres', description="Ingestion data raw from
         output_table=Table(
             name="tb_products",
             conn_id="postgres_conn",
-            metadata=Metadata(schema="raw"),
+            metadata=Metadata(schema="raw",
+                              database="lakehouse",),
         )
     )
 
