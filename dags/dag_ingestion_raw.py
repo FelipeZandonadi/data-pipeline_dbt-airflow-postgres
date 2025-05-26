@@ -70,6 +70,17 @@ with DAG(dag_id='ingestion_S3_to_postgres', description="Ingestion data raw from
                               ),
         )
     )
+    
+    order_reviews_to_postgres = aql.load_file(
+        task_id="order_reviews",
+        input_file=File(path=FILE_PATH_S3 + "order_reviews.csv", conn_id=CONN_ID_S3),
+        output_table=Table(
+            name="tb_order_reviews",
+            conn_id="postgres_conn_raw",
+            metadata=Metadata(schema="raw",
+                              ),
+        )
+    )
 
     end = EmptyOperator(task_id="End")
     
@@ -78,4 +89,4 @@ with DAG(dag_id='ingestion_S3_to_postgres', description="Ingestion data raw from
     #     trigger_dag_id="brz_dag", 
     # )
     
-    start >> [orders_to_postgres, customers_to_postgres, order_payments_to_postgres, order_items_to_postgres, products_to_postgres] >> end
+    start >> [orders_to_postgres, customers_to_postgres, order_payments_to_postgres, order_items_to_postgres, products_to_postgres, order_reviews_to_postgres] >> end
