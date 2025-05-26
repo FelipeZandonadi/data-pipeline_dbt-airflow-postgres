@@ -22,7 +22,7 @@ with DAG(dag_id='ingestion_S3_to_postgres', description="Ingestion data raw from
         output_table=Table(
             name="tb_orders",
             conn_id="postgres_conn",
-            metadata=Metadata(schema="raw")
+            metadata=Metadata(schema="raw", dbase="lakehouse")
         )
     )
     
