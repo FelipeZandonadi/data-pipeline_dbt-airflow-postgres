@@ -1,0 +1,117 @@
+version: 2
+
+models:
+  - name: slv_tb_order_items
+    description: "Tabela transformada e tratada de itens do pedido"
+    columns:
+      - name: order_item_id
+        description: "Identificador único do item"
+        tests:
+          - not_null
+
+      - name: order_id
+        description: "Relacionamento com os pedidos"
+        tests:
+          - not_null
+
+      - name: product_id
+        description: "Relacionamento com os produtos"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('slv_tb_products')
+              field: product_id
+
+      - name: seller_id
+        description: "Relacionamento com os vendedores"
+        tests:
+          - not_null
+      
+    tests:
+      - unique_combination_columns:
+          combination_of: ['order_item_id', 'order_id']
+          description: "Verifica a combinação única de order_item_id e order_id"
+
+  - name: slv_tb_orders
+    description: "Tabela transformada e tratada de pedidos"
+    columns:
+      - name: order_id
+        description: "Chave primária do pedido"
+        tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        description: "Relacionamento com os clientes"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('slv_tb_customers')
+              field: customer_id
+      
+      - name: order_status
+        description: "Status do pedido"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['shipped', 'unavailable', 'invoiced', 'created', 'approved', 'processing', 'delivered', 'canceled', 'returned',]
+
+  - name: slv_tb_customers
+    description: "Tabela transformada e tratada de clientes"
+    columns:
+      - name: customer_id
+        description: "Chave primária do cliente"
+        tests:
+          - not_null
+          - unique
+
+      - name: customer_unique_id
+        tests:
+          - not_null
+
+      - name: customer_state
+        description: "Estado do cliente"
+        tests:
+          - not_null
+
+    tests:
+      - column_pattern_field:
+          column: 'customer_state'
+          pattern: '__'
+
+  - name: slv_tb_order_payments
+    description: "Tabela transformada e tratada de pagamentos"
+    columns:
+      - name: order_id
+        description: "Relacionamento com os pedidos"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('slv_tb_orders')
+              field: order_id
+
+      - name: payment_sequential
+        description: "Identificador único do pagamento"
+        tests:
+          - not_null
+
+      - name: payment_type
+        description: "Tipo de pagamento"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['not_defined', 'boleto', 'debit_card', 'voucher', 'credit_card']
+
+    tests:
+      - unique_combination_columns:
+          combination_of: ['order_id', 'payment_sequential']
+          description: "Verifica a combinação única de order_id e payment_sequential"
+
+  - name: slv_tb_products
+    description: "Tabela transformada e tratada de produtos"
+    columns:
+      - name: product_id
+        description: "Chave primária do produto"
+        tests:
+          - not_null
+          - unique

@@ -1,0 +1,78 @@
+version: 2
+
+models:
+
+  - name: brz_tb_customers
+    description: "Tabela transformada de clientes"
+    columns:
+      - name: customer_id
+        description: "Chave primária do cliente"
+        tests:
+          - not_null
+          - unique
+      - name: customer_unique_id
+        data_tests:
+          - not_null
+
+  - name: brz_tb_order_items
+    description: "Tabela transformada de itens do pedido"
+    columns:
+      - name: order_item_id
+        description: "Identificador único do item"
+        tests:
+          - not_null
+
+      - name: order_id
+        description: "Relacionamento com os pedidos"
+        tests:
+          - not_null
+
+      - name: product_id
+        description: "Relacionamento com os produtos"
+        tests:
+          - not_null
+      
+    tests:
+      - unique_combination_columns:
+          combination_of: ['order_item_id', 'order_id']
+          description: "Verifica a combinação única de order_item_id e order_id"
+
+  - name: brz_tb_order_payments
+    description: "Tabela transformada de pagamentos"
+    columns:
+      - name: order_id
+        description: "Relacionamento com os pedidos"
+        tests:
+          - not_null
+
+      - name: payment_sequential
+        description: "Identificador único do pagamento"
+        tests:
+          - not_null
+
+    tests:
+      - unique_combination_columns:
+          combination_of: ['order_id', 'payment_sequential']
+
+  - name: brz_tb_orders
+    description: "Tabela transformada de pedidos"
+    columns:
+      - name: order_id
+        description: "Chave primária do pedido"
+        tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        description: "Relacionamento com os clientes"
+        tests:
+          - not_null
+
+  - name: brz_tb_products
+    description: "Tabela transformada de produtos"
+    columns:
+      - name: product_id
+        description: "Chave primária do produto"
+        tests:
+          - not_null
+          - unique
