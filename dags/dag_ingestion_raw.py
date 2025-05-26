@@ -21,9 +21,9 @@ with DAG(dag_id='ingestion_S3_to_postgres', description="Ingestion data raw from
         input_file=File(path=FILE_PATH_S3 + "orders.csv", conn_id=CONN_ID_S3),
         output_table=Table(
             name="tb_orders",
-            conn_id="postgres_conn",
-            metadata=Metadata(schema="raw", 
-                              database="lakehouse",),
+            conn_id="postgres_conn_raw",
+            metadata=Metadata(schema="raw",
+                              ),
         )
     )
     
@@ -32,9 +32,9 @@ with DAG(dag_id='ingestion_S3_to_postgres', description="Ingestion data raw from
         input_file=File(path=FILE_PATH_S3 + "customers.csv", conn_id=CONN_ID_S3),
         output_table=Table(
             name="tb_customers",
-            conn_id="postgres_conn",
+            conn_id="postgres_conn_raw",
             metadata=Metadata(schema="raw",
-                              database="lakehouse",),
+                              ),
             )
     )
     
@@ -43,9 +43,9 @@ with DAG(dag_id='ingestion_S3_to_postgres', description="Ingestion data raw from
         input_file=File(path=FILE_PATH_S3 + "order_payments.csv", conn_id=CONN_ID_S3),
         output_table=Table(
             name="tb_order_payments",
-            conn_id="postgres_conn",
+            conn_id="postgres_conn_raw",
             metadata=Metadata(schema="raw",
-                              database="lakehouse",),
+                              ),
         )
     )
     
@@ -54,9 +54,9 @@ with DAG(dag_id='ingestion_S3_to_postgres', description="Ingestion data raw from
         input_file=File(path=FILE_PATH_S3 + "order_items.csv", conn_id=CONN_ID_S3),
         output_table=Table(
             name="tb_order_items",
-            conn_id="postgres_conn",
+            conn_id="postgres_conn_raw",
             metadata=Metadata(schema="raw",
-                              database="lakehouse",),
+                              ),
         )
     )
 
@@ -65,9 +65,9 @@ with DAG(dag_id='ingestion_S3_to_postgres', description="Ingestion data raw from
         input_file=File(path=FILE_PATH_S3 + "products.csv", conn_id=CONN_ID_S3),
         output_table=Table(
             name="tb_products",
-            conn_id="postgres_conn",
+            conn_id="postgres_conn_raw",
             metadata=Metadata(schema="raw",
-                              database="lakehouse",),
+                              ),
         )
     )
 
