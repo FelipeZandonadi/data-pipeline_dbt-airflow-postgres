@@ -10,3 +10,6 @@ sources:
       - name: tb_order_payments
       - name: tb_orders
       - name: tb_products
+      - name: tb_order_reviews
+      - name: tb_sellers
+      - name: tb_geolocation

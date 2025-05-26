@@ -76,3 +76,34 @@ models:
         tests:
           - not_null
           - unique
+
+  - name: brz_tb_order_reviews
+    description: "Tabela transformada de avaliações de pedidos"
+    columns:
+      - name: review_id
+        description: "Chave primária da avaliação"
+        tests:
+          - not_null
+
+      - name: order_id
+        description: "Relacionamento com os pedidos"
+        tests:
+          - not_null
+
+  - name: brz_tb_sellers
+    description: "Tabela transformada de vendedores"
+    columns:
+      - name: seller_id
+        description: "Chave primária do vendedor"
+        tests:
+          - not_null
+          - unique
+
+  - name: brz_tb_geolocation
+    description: "Tabela transformada de geolocalização"
+    columns:
+      - name: geolocation_zip_code_prefix
+        description: "Prefixo do código postal"
+        tests:
+          - not_null
+          - unique
