@@ -26,7 +26,7 @@ with DAG(dag_id='ingestion_S3_to_postgres', description="Ingestion data raw from
                               ),
         )
     )
-    
+
     customers_to_postgres = aql.load_file(
         task_id="customers",
         input_file=File(path=FILE_PATH_S3 + "customers.csv", conn_id=CONN_ID_S3),
@@ -37,7 +37,7 @@ with DAG(dag_id='ingestion_S3_to_postgres', description="Ingestion data raw from
                               ),
             )
     )
-    
+
     order_payments_to_postgres = aql.load_file(
         task_id="order_payments",
         input_file=File(path=FILE_PATH_S3 + "order_payments.csv", conn_id=CONN_ID_S3),
@@ -48,7 +48,7 @@ with DAG(dag_id='ingestion_S3_to_postgres', description="Ingestion data raw from
                               ),
         )
     )
-    
+
     order_items_to_postgres = aql.load_file(
         task_id="order_items",
         input_file=File(path=FILE_PATH_S3 + "order_items.csv", conn_id=CONN_ID_S3),
@@ -70,12 +70,34 @@ with DAG(dag_id='ingestion_S3_to_postgres', description="Ingestion data raw from
                               ),
         )
     )
-    
+
     order_reviews_to_postgres = aql.load_file(
         task_id="order_reviews",
         input_file=File(path=FILE_PATH_S3 + "order_reviews.csv", conn_id=CONN_ID_S3),
         output_table=Table(
             name="tb_order_reviews",
+            conn_id="postgres_conn_raw",
+            metadata=Metadata(schema="raw",
+                              ),
+        )
+    )
+
+    sellers_to_postgres = aql.load_file(
+        task_id="sellers",
+        input_file=File(path=FILE_PATH_S3 + "sellers.csv", conn_id=CONN_ID_S3),
+        output_table=Table(
+            name="tb_sellers",
+            conn_id="postgres_conn_raw",
+            metadata=Metadata(schema="raw",
+                              ),
+        )
+    )
+
+    order_review_to_postgres = aql.load_file(
+        task_id="geolocation",
+        input_file=File(path=FILE_PATH_S3 + "geolocation.csv", conn_id=CONN_ID_S3),
+        output_table=Table(
+            name="tb_geolocation",
             conn_id="postgres_conn_raw",
             metadata=Metadata(schema="raw",
                               ),
