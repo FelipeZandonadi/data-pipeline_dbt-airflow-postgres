@@ -1,7 +1,6 @@
 version: 2
 
 models:
-
   - name: brz_tb_customers
     description: "Tabela transformada de clientes"
     columns:
@@ -11,31 +10,45 @@ models:
           - not_null
           - unique
       - name: customer_unique_id
-        data_tests:
+        description: "Identificador único universal do cliente" # Adicionada descrição para clareza
+        tests: # Corrigido de data_tests para tests
           - not_null
+          # - unique # Considere adicionar 'unique' se este campo também deve ser único
 
   - name: brz_tb_order_items
     description: "Tabela transformada de itens do pedido"
     columns:
       - name: order_item_id
-        description: "Identificador único do item"
+        description: "Identificador único do item dentro do pedido"
         tests:
           - not_null
-
       - name: order_id
         description: "Relacionamento com os pedidos"
         tests:
           - not_null
-
+          # Considere adicionar um teste de relacionamento se brz_tb_orders for uma fonte confiável já na bronze
+          # - relationships:
+          #     to: ref('brz_tb_orders')
+          #     field: order_id
       - name: product_id
         description: "Relacionamento com os produtos"
         tests:
           - not_null
-      
+          - relationships: # Adicionado teste de relacionamento
+              to: ref('brz_tb_products')
+              field: product_id
+      # Adicione seller_id se existir e quiser testar o relacionamento
+      # - name: seller_id
+      #   description: "Relacionamento com os vendedores"
+      #   tests:
+      #     - not_null
+      #     - relationships:
+      #         to: ref('brz_tb_sellers')
+      #         field: seller_id
     tests:
-      - unique_combination_columns:
-          combination_of: ['order_item_id', 'order_id']
-          description: "Verifica a combinação única de order_item_id e order_id"
+      - dbt_utils.unique_combination_of_columns: # Substituído pelo teste do dbt_utils
+          combination_of_columns: ['order_id', 'order_item_id'] # 'order_id' primeiro para consistência com a chave primária comum
+          # description: "Verifica a combinação única de order_id e order_item_id" # Descrição é opcional aqui, o nome do teste já é descritivo
 
   - name: brz_tb_order_payments
     description: "Tabela transformada de pagamentos"
@@ -44,15 +57,17 @@ models:
         description: "Relacionamento com os pedidos"
         tests:
           - not_null
-
+          # Considere adicionar um teste de relacionamento
+          # - relationships:
+          #     to: ref('brz_tb_orders')
+          #     field: order_id
       - name: payment_sequential
-        description: "Identificador único do pagamento"
+        description: "Identificador único do pagamento para um mesmo pedido"
         tests:
           - not_null
-
     tests:
-      - unique_combination_columns:
-          combination_of: ['order_id', 'payment_sequential']
+      - dbt_utils.unique_combination_of_columns: # Substituído pelo teste do dbt_utils
+          combination_of_columns: ['order_id', 'payment_sequential']
 
   - name: brz_tb_orders
     description: "Tabela transformada de pedidos"
@@ -62,11 +77,13 @@ models:
         tests:
           - not_null
           - unique
-
       - name: customer_id
         description: "Relacionamento com os clientes"
         tests:
           - not_null
+          - relationships: # Adicionado teste de relacionamento
+              to: ref('brz_tb_customers')
+              field: customer_id
 
   - name: brz_tb_products
     description: "Tabela transformada de produtos"
@@ -81,16 +98,39 @@ models:
     description: "Tabela transformada de avaliações de pedidos"
     columns:
       - name: review_id
-        description: "Chave primária da avaliação"
+        description: "Chave primária da avaliação (ou parte dela)" # Ajuste a descrição conforme a granularidade
         tests:
           - not_null
-
+          # Se review_id sozinho for único:
+          # - unique
+          # Se a combinação de review_id e order_id for única (mais comum):
+          # Adicione um teste a nível de modelo como em brz_tb_order_items
       - name: order_id
         description: "Relacionamento com os pedidos"
         tests:
           - not_null
+          - relationships: # Adicionado teste de relacionamento
+              to: ref('brz_tb_orders')
+              field: order_id
+    # Se a combinação de review_id e order_id for a chave, adicione:
+    # tests:
+    #   - dbt_utils.unique_combination_of_columns:
+    #       combination_of_columns: ['review_id', 'order_id']
 
   - name: brz_tb_sellers
+    description: "Tabela de vendedores na camada bronze" # Adicionada descrição
+    columns:
+      - name: seller_id
+        description: "Chave primária do vendedor"
+        tests:
+          - not_null
+          - unique
+      # Adicione outras colunas e testes conforme necessário
+      # Ex:
+      # - name: seller_zip_code_prefix
+      #   description: "Prefixo do CEP do vendedor"
+      #   tests:
+      #     - not_null
     description: "Tabela transformada de vendedores"
     columns:
       - name: seller_id

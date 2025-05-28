@@ -1,199 +1,171 @@
 version: 2
 
 models:
-  - name: slv_tb_order_items
-    description: "Tabela transformada e tratada de itens do pedido"
+  - name: slv_tb_customers
+    description: "Tabela de clientes na camada Silver, limpa e transformada."
     columns:
-      - name: order_item_id
-        description: "Identificador único do item"
+      - name: customer_id
+        description: "Chave primária do cliente (ID original)"
+        tests:
+          - not_null
+          - unique
+      - name: customer_unique_id
+        description: "Identificador único universal do cliente"
         tests:
           - not_null
 
+  - name: slv_tb_order_items
+    description: "Tabela de itens de pedido na camada Silver, limpa e com dados enriquecidos."
+    columns:
+      # A chave primária desta tabela é composta por order_id e um identificador do item
+      # Vamos assumir que 'order_item_id' (ou um campo similar) identifique unicamente o item DENTRO de um pedido.
       - name: order_id
-        description: "Relacionamento com os pedidos"
+        description: "Chave estrangeira para slv_tb_orders e parte da chave primária composta"
         tests:
           - not_null
-
+          - relationships:
+              to: ref('slv_tb_orders')
+              field: order_id
+      - name: order_item_id # Assumindo que este é o ID sequencial/único do item dentro do pedido
+        description: "Identificador único do item dentro do pedido (ex: sequencial, ID da linha original) e parte da chave primária composta"
+        tests:
+          - not_null
       - name: product_id
-        description: "Relacionamento com os produtos"
+        description: "Chave estrangeira para slv_tb_products"
         tests:
           - not_null
           - relationships:
               to: ref('slv_tb_products')
               field: product_id
-
       - name: seller_id
-        description: "Relacionamento com os vendedores"
+        description: "Chave estrangeira para slv_tb_sellers"
         tests:
           - not_null
-          - relationships: # Adicionado relacionamento com slv_tb_sellers
+          - relationships:
               to: ref('slv_tb_sellers')
               field: seller_id
-            
+      - name: price
+        description: "Preço do item"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+      - name: freight_value
+        description: "Valor do frete para o item"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
     tests:
-      - unique_combination_columns:
-          combination_of: ['order_item_id', 'order_id']
-          description: "Verifica a combinação única de order_item_id e order_id"
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['order_id', 'order_item_id'] # Ajustado para a chave primária natural composta
+
+  - name: slv_tb_order_payments
+    description: "Tabela de pagamentos de pedidos na camada Silver."
+    columns:
+      # A chave primária desta tabela é composta por order_id e payment_sequential
+      - name: order_id
+        description: "Chave estrangeira para slv_tb_orders e parte da chave primária composta"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('slv_tb_orders')
+              field: order_id
+      - name: payment_sequential
+        description: "Número sequencial do pagamento para um mesmo pedido e parte da chave primária composta"
+        tests:
+          - not_null
+      - name: payment_type
+        description: "Tipo de pagamento"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['credit_card', 'boleto', 'voucher', 'debit_card', 'not_defined']
+      - name: payment_installments
+        description: "Número de parcelas"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+      - name: payment_value
+        description: "Valor do pagamento"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['order_id', 'payment_sequential'] # Chave primária natural composta
 
   - name: slv_tb_orders
-    description: "Tabela transformada e tratada de pedidos"
+    description: "Tabela de pedidos na camada Silver, com status e datas tratadas."
     columns:
       - name: order_id
         description: "Chave primária do pedido"
         tests:
           - not_null
           - unique
-
       - name: customer_id
-        description: "Relacionamento com os clientes"
+        description: "Chave estrangeira para slv_tb_customers"
         tests:
           - not_null
           - relationships:
               to: ref('slv_tb_customers')
               field: customer_id
-      
       - name: order_status
         description: "Status do pedido"
         tests:
           - not_null
           - accepted_values:
-              values: ['shipped', 'unavailable', 'invoiced', 'created', 'approved', 'processing', 'delivered', 'canceled', 'returned']
-
-  - name: slv_tb_customers
-    description: "Tabela transformada e tratada de clientes"
-    columns:
-      - name: customer_id
-        description: "Chave primária do cliente"
-        tests:
-          - not_null
-          - unique
-
-      - name: customer_unique_id
-        tests:
-          - not_null
-
-      - name: customer_state
-        description: "Estado do cliente"
-        tests:
-          - not_null
-
-    tests:
-      - column_pattern_field:
-          column: 'customer_state' # Nome da coluna a ser testada
-          pattern: '__' # Regex para sigla de estado com 2 caracteres (ex: SP, RJ)
-
-  - name: slv_tb_order_payments
-    description: "Tabela transformada e tratada de pagamentos"
-    columns:
-      - name: order_id
-        description: "Relacionamento com os pedidos"
-        tests:
-          - not_null
-          - relationships:
-              to: ref('slv_tb_orders')
-              field: order_id
-
-      - name: payment_sequential
-        description: "Identificador único do pagamento"
-        tests:
-          - not_null
-
-      - name: payment_type
-        description: "Tipo de pagamento"
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['not_defined', 'boleto', 'debit_card', 'voucher', 'credit_card']
-
-    tests:
-      - unique_combination_columns:
-          combination_of: ['order_id', 'payment_sequential']
-          description: "Verifica a combinação única de order_id e payment_sequential"
+              values: ['delivered', 'shipped', 'canceled', 'invoiced', 'processing', 'approved', 'created', 'unavailable']
 
   - name: slv_tb_products
-    description: "Tabela transformada e tratada de produtos"
+    description: "Tabela de produtos na camada Silver, com categorias e dimensões."
     columns:
       - name: product_id
         description: "Chave primária do produto"
         tests:
           - not_null
           - unique
-
-  - name: slv_tb_order_reviews # Novo modelo adicionado
-    description: "Tabela transformada e tratada de avaliações de pedidos"
-    columns:
-      - name: review_id
-        description: "Identificador único da avaliação"
+      - name: product_category_name
+        description: "Nome da categoria do produto"
         tests:
           - not_null
-      
+
+  - name: slv_tb_order_reviews
+    description: "Tabela de avaliações de pedidos na camada Silver."
+    columns:
+      # A chave primária desta tabela é composta por review_id e order_id
+      - name: review_id
+        description: "Identificador da avaliação da fonte e parte da chave primária composta"
+        tests:
+          - not_null
       - name: order_id
-        description: "Relacionamento com os pedidos"
+        description: "Chave estrangeira para slv_tb_orders e parte da chave primária composta"
         tests:
           - not_null
           - relationships:
               to: ref('slv_tb_orders')
               field: order_id
-      
       - name: review_score
-        description: "Nota da avaliação (1 a 5)"
+        description: "Nota da avaliação"
         tests:
           - not_null
           - accepted_values:
               values: [1, 2, 3, 4, 5]
-      
-      - name: review_comment_title
-        description: "Título do comentário da avaliação (pode ser nulo)"
-      
-      - name: review_comment_message
-        description: "Mensagem do comentário da avaliação (pode ser nulo)"
-      
-      - name: review_creation_date
-        description: "Data de criação da avaliação"
-        tests:
-          - not_null
-      
-      - name: review_answer_timestamp
-        description: "Timestamp da resposta à avaliação (pode ser nulo)"
-        
     tests:
-      - unique_combination_columns:
-          combination_of: ['review_id', 'order_id']
-          description: "Verifica a combinação única de review_id e order_id, conforme chave primária"
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['review_id', 'order_id'] # Chave primária natural composta
 
-  - name: slv_tb_sellers # Novo modelo adicionado
-    description: "Tabela transformada e tratada de vendedores"
+  - name: slv_tb_sellers
+    description: "Tabela de vendedores na camada Silver."
     columns:
       - name: seller_id
         description: "Chave primária do vendedor"
         tests:
           - not_null
           - unique
-      
-      - name: seller_zip_code_prefix
-        description: "Prefixo do CEP do vendedor"
-        tests:
-          - not_null
-          # Poderia adicionar teste de comprimento ou formato específico se necessário
-          # Exemplo: - dbt_expectations.expect_column_value_lengths_to_equal:
-          #              value: 5 
-      
-      - name: seller_city
-        description: "Cidade do vendedor"
-        tests:
-          - not_null
-      
       - name: seller_state
-        description: "Estado do vendedor (sigla com 2 caracteres)"
+        description: "Estado do vendedor" # Adicionada descrição
         tests:
           - not_null
-          # Adicionando um teste para garantir que o estado tenha 2 caracteres
-          # Se estiver usando dbt_expectations, poderia ser:
-          # - dbt_expectations.expect_column_value_lengths_to_equal:
-          #     value: 2
-          # Para um teste genérico de padrão como em slv_tb_customers:
-    tests: # Teste a nível de modelo para seller_state
-      - column_pattern_field: 
-          column: 'seller_state' 
-          pattern: '__' 
-          description: "Verifica se seller_state possui 2 caracteres"

@@ -1,9 +1,9 @@
 packages:
-  - package: dbt-labs/dbt_utils
-    version: 1.1.1  # Ou a versão mais recente que você encontrar no dbt Hub
+  - package: metaplane/dbt_expectations
+    version: 0.10.8 
 
-  - package: calogica/dbt_expectations
-    version: 0.10.3 # Ou a versão mais recente que você encontrar no dbt Hub
-                    # Nota: dbt_expectations pode ter outras versões mais recentes.
-                    # A versão 0.10.x é compatível com dbt Core >=1.0.0 <2.0.0
-                    # Verifique a compatibilidade da versão no dbt Hub.
+  - package: dbt-labs/dbt_utils
+    version: 1.3.0  
+
+  - package: godatadriven/dbt_date
+    version: 0.11.0
