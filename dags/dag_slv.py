@@ -62,9 +62,9 @@ with DAG(
 	
 	start = EmptyOperator(task_id = "Start")
 	
-	execute_sale_slv_1 = create_dbt_run_and_test(['slv_tb_customers', 'slv_tb_products'], 1)
+	execute_sale_slv_1 = create_dbt_run_and_test(['slv_tb_customers', 'slv_tb_products', 'slv_tb_sellers'], 1)
 	execute_sale_slv_2 = create_dbt_run_and_test(['slv_tb_orders'], 2)
-	execute_sale_slv_3 = create_dbt_run_and_test(['slv_tb_order_items', 'slv_tb_order_payments'], 3)
+	execute_sale_slv_3 = create_dbt_run_and_test(['slv_tb_order_items', 'slv_tb_order_payments', 'slv_tb_order_reviews'], 3)
 
 	end = EmptyOperator(task_id = "End")
 	
