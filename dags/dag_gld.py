@@ -63,8 +63,9 @@ with DAG(
 	start = EmptyOperator(task_id = "Start")
 	
 	execute_sale_gld_1 = create_dbt_run_and_test(['dim_date', 'dim_category_prouct', 'dim_location'], 1)
-	execute_sale_gld_2 = create_dbt_run_and_test(['dim_product'], 2)
-	execute_sale_gld_3 = create_dbt_run_and_test(['fact_order_product', 'fact_customer'], 3)
+	execute_sale_gld_2 = create_dbt_run_and_test(['dim_product', 'agr_sellers', 'agr_customer'], 2)
+	execute_sale_gld_3 = create_dbt_run_and_test(['fact_orders'], 3)
+	execute_sale_gld_4 = create_dbt_run_and_test(['fact_order_reviews', 'fact_order_product'], 4)
 
 	end = EmptyOperator(task_id = "End")
 	
