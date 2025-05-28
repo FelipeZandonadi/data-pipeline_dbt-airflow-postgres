@@ -1,4 +1,4 @@
-{% macro catch_data_information(column) %}
+{% macro catch_date_information(column) %}
     CAST({{ column }} AS DATE) AS date,
     extract(YEAR FROM {{ column }}) AS year,
     extract(MONTH FROM {{ column }}) AS month,

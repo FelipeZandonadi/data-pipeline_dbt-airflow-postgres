@@ -26,7 +26,10 @@ models:
         description: "Relacionamento com os vendedores"
         tests:
           - not_null
-      
+          - relationships: # Adicionado relacionamento com slv_tb_sellers
+              to: ref('slv_tb_sellers')
+              field: seller_id
+            
     tests:
       - unique_combination_columns:
           combination_of: ['order_item_id', 'order_id']
@@ -54,7 +57,7 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['shipped', 'unavailable', 'invoiced', 'created', 'approved', 'processing', 'delivered', 'canceled', 'returned',]
+              values: ['shipped', 'unavailable', 'invoiced', 'created', 'approved', 'processing', 'delivered', 'canceled', 'returned']
 
   - name: slv_tb_customers
     description: "Tabela transformada e tratada de clientes"
@@ -76,8 +79,8 @@ models:
 
     tests:
       - column_pattern_field:
-          column: 'customer_state'
-          pattern: '__'
+          column: 'customer_state' # Nome da coluna a ser testada
+          pattern: '__' # Regex para sigla de estado com 2 caracteres (ex: SP, RJ)
 
   - name: slv_tb_order_payments
     description: "Tabela transformada e tratada de pagamentos"
@@ -115,3 +118,82 @@ models:
         tests:
           - not_null
           - unique
+
+  - name: slv_tb_order_reviews # Novo modelo adicionado
+    description: "Tabela transformada e tratada de avaliações de pedidos"
+    columns:
+      - name: review_id
+        description: "Identificador único da avaliação"
+        tests:
+          - not_null
+      
+      - name: order_id
+        description: "Relacionamento com os pedidos"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('slv_tb_orders')
+              field: order_id
+      
+      - name: review_score
+        description: "Nota da avaliação (1 a 5)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5]
+      
+      - name: review_comment_title
+        description: "Título do comentário da avaliação (pode ser nulo)"
+      
+      - name: review_comment_message
+        description: "Mensagem do comentário da avaliação (pode ser nulo)"
+      
+      - name: review_creation_date
+        description: "Data de criação da avaliação"
+        tests:
+          - not_null
+      
+      - name: review_answer_timestamp
+        description: "Timestamp da resposta à avaliação (pode ser nulo)"
+        
+    tests:
+      - unique_combination_columns:
+          combination_of: ['review_id', 'order_id']
+          description: "Verifica a combinação única de review_id e order_id, conforme chave primária"
+
+  - name: slv_tb_sellers # Novo modelo adicionado
+    description: "Tabela transformada e tratada de vendedores"
+    columns:
+      - name: seller_id
+        description: "Chave primária do vendedor"
+        tests:
+          - not_null
+          - unique
+      
+      - name: seller_zip_code_prefix
+        description: "Prefixo do CEP do vendedor"
+        tests:
+          - not_null
+          # Poderia adicionar teste de comprimento ou formato específico se necessário
+          # Exemplo: - dbt_expectations.expect_column_value_lengths_to_equal:
+          #              value: 5 
+      
+      - name: seller_city
+        description: "Cidade do vendedor"
+        tests:
+          - not_null
+      
+      - name: seller_state
+        description: "Estado do vendedor (sigla com 2 caracteres)"
+        tests:
+          - not_null
+          # Adicionando um teste para garantir que o estado tenha 2 caracteres
+          # Se estiver usando dbt_expectations, poderia ser:
+          # - dbt_expectations.expect_column_value_lengths_to_equal:
+          #     value: 2
+          # Para um teste genérico de padrão como em slv_tb_customers:
+    tests: # Teste a nível de modelo para seller_state
+      - column_pattern_field: 
+          column: 'seller_state' 
+          pattern: '__' 
+          description: "Verifica se seller_state possui 2 caracteres"

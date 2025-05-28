@@ -7,10 +7,15 @@
 )}}
 
 WITH customer_location AS (
-    SELECT DISTINCT
+    SELECT
         coalesce(customer_state, 'unknown') state,
         coalesce(customer_city, 'unknown') city
     FROM {{ source('slv_data', 'slv_tb_customers') }}
+    UNION
+    SELECT
+        coalesce(seller_state, 'unknown') state,
+        coalesce(seller_city, 'unknown') city
+    FROM {{ source('slv_data', 'slv_tb_sellers') }}
 
 )
 

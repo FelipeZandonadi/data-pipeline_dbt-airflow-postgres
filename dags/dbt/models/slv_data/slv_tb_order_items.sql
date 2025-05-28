@@ -4,7 +4,8 @@
     post_hook=[
         'ALTER TABLE slv_data.slv_tb_order_items ADD PRIMARY KEY (order_id, order_item_id)',
         'ALTER TABLE slv_data.slv_tb_order_items ADD CONSTRAINT fk_order_to_items FOREIGN KEY (order_id) REFERENCES slv_data.slv_tb_orders(order_id)',
-        'ALTER TABLE slv_data.slv_tb_order_items ADD CONSTRAINT fk_products_to_items FOREIGN KEY (product_id) REFERENCES slv_data.slv_tb_products(product_id)'
+        'ALTER TABLE slv_data.slv_tb_order_items ADD CONSTRAINT fk_products_to_items FOREIGN KEY (product_id) REFERENCES slv_data.slv_tb_products(product_id)',
+        'ALTER TABLE slv_data.slv_tb_order_items ADD CONSTRAINT fk_sellers_to_items FOREIGN KEY (seller_id) REFERENCES slv_data.slv_tb_sellers(seller_id)',
     ]
 ) }}
 
