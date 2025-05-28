@@ -69,4 +69,4 @@ with DAG(
 
 	end = EmptyOperator(task_id = "End")
 	
-	start >> execute_sale_gld_1 >> execute_sale_gld_2 >> execute_sale_gld_3 >> end
+	start >> execute_sale_gld_1 >> execute_sale_gld_2 >> execute_sale_gld_3 >> execute_sale_gld_4 >> end
