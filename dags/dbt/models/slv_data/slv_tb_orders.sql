@@ -2,8 +2,8 @@
     materialized='table',
     alias='slv_tb_orders',
     post_hook=[
-        'ALTER TABLE slv_data.slv_tb_orders ADD PRIMARY KEY (order_id)',
-        'ALTER TABLE slv_data.slv_tb_orders ADD CONSTRAINT fk_order_to_customer FOREIGN KEY (customer_id) REFERENCES slv_data.slv_tb_customers(customer_id)'
+        'ALTER TABLE slv_data.slv_tb_orders ADD PRIMARY KEY (CD_order)',
+        'ALTER TABLE slv_data.slv_tb_orders ADD CONSTRAINT fk_order_to_customer FOREIGN KEY (CD_customer) REFERENCES slv_data.slv_tb_customers(CD_customer)'
     ]
 ) }}
 
@@ -20,12 +20,12 @@ with source as (
 )
 
 SELECT
-    CAST(s.order_id AS TEXT) AS order_id,
-    CAST(s.customer_id AS TEXT) AS customer_id,
-    CAST(s.order_status AS TEXT) AS order_status,
-    CAST(s.order_purchase_timestamp AS TIMESTAMP) AS order_purchase_timestamp,
-    CAST(s.order_approved_at AS TIMESTAMP) AS order_approved_at,
-    CAST(s.order_delivered_carrier_date AS TIMESTAMP) AS order_delivered_carrier_date,
-    CAST(s.order_delivered_customer_date AS TIMESTAMP) AS order_delivered_customer_date,
-    CAST(s.order_estimated_delivery_date AS TIMESTAMP) AS order_estimated_delivery_date
+    CAST(s.order_id AS TEXT) AS CD_order,
+    CAST(s.customer_id AS TEXT) AS CD_customer,
+    CAST(s.order_purchase_timestamp AS TIMESTAMP) AS DH_purchase,
+    CAST(s.order_approved_at AS TIMESTAMP) AS DH_approved,
+    CAST(s.order_delivered_carrier_date AS TIMESTAMP) AS DH_delivered_carrier,
+    CAST(s.order_delivered_customer_date AS TIMESTAMP) AS DH_delivered_customer,
+    CAST(s.order_estimated_delivery_date AS TIMESTAMP) AS DH_estimeted_delivery,
+    CAST(s.order_status AS TEXT) AS FL_status
 FROM source AS s

@@ -2,10 +2,10 @@
     materialized='table', 
     alias='slv_tb_order_items',
     post_hook=[
-        'ALTER TABLE slv_data.slv_tb_order_items ADD PRIMARY KEY (order_id, order_item_id)',
-        'ALTER TABLE slv_data.slv_tb_order_items ADD CONSTRAINT fk_order_to_items FOREIGN KEY (order_id) REFERENCES slv_data.slv_tb_orders(order_id)',
-        'ALTER TABLE slv_data.slv_tb_order_items ADD CONSTRAINT fk_products_to_items FOREIGN KEY (product_id) REFERENCES slv_data.slv_tb_products(product_id)',
-        'ALTER TABLE slv_data.slv_tb_order_items ADD CONSTRAINT fk_sellers_to_items FOREIGN KEY (seller_id) REFERENCES slv_data.slv_tb_sellers(seller_id)',
+        'ALTER TABLE slv_data.slv_tb_order_items ADD PRIMARY KEY (CD_order, NR_item)',
+        'ALTER TABLE slv_data.slv_tb_order_items ADD CONSTRAINT fk_order_to_items FOREIGN KEY (CD_order) REFERENCES slv_data.slv_tb_orders(CD_order)',
+        'ALTER TABLE slv_data.slv_tb_order_items ADD CONSTRAINT fk_products_to_items FOREIGN KEY (CD_product) REFERENCES slv_data.slv_tb_products(CD_product)',
+        'ALTER TABLE slv_data.slv_tb_order_items ADD CONSTRAINT fk_sellers_to_items FOREIGN KEY (CD_seller) REFERENCES slv_data.slv_tb_sellers(CD_seller)',
     ]
 ) }}
 
@@ -16,11 +16,11 @@ with source as (
 )
 
 SELECT
-    CAST(s.order_id AS TEXT) AS order_id,
-    CAST(s.order_item_id AS BIGINT) AS order_item_id,
-    CAST(s.product_id AS TEXT) AS product_id,
-    CAST(s.seller_id AS TEXT) AS seller_id,
-    CAST(s.shipping_limit_date AS TIMESTAMP) AS shipping_limit_date,
-    CAST(s.price AS NUMERIC(10, 2)) AS price,
-    CAST(s.freight_value AS NUMERIC(10, 2)) AS freight_value
+    CAST(s.order_id AS TEXT) AS CD_order,
+    CAST(s.order_item_id AS BIGINT) AS NR_item,
+    CAST(s.product_id AS TEXT) AS CD_product,
+    CAST(s.seller_id AS TEXT) AS CD_seller,
+    CAST(s.shipping_limit_date AS TIMESTAMP) AS DH_shipping_limit,
+    CAST(s.price AS NUMERIC(12, 2)) AS VL_price,
+    CAST(s.freight_value AS NUMERIC(12, 2)) AS VL_freight
 FROM source AS s

@@ -4,12 +4,12 @@ models:
   - name: slv_tb_customers
     description: "Tabela de clientes na camada Silver, limpa e transformada."
     columns:
-      - name: customer_id
+      - name: CD_customer
         description: "Chave primária do cliente (ID original)"
         tests:
           - not_null
           - unique
-      - name: customer_unique_id
+      - name: CD_customer_unique
         description: "Identificador único universal do cliente"
         tests:
           - not_null
@@ -17,40 +17,38 @@ models:
   - name: slv_tb_order_items
     description: "Tabela de itens de pedido na camada Silver, limpa e com dados enriquecidos."
     columns:
-      # A chave primária desta tabela é composta por order_id e um identificador do item
-      # Vamos assumir que 'order_item_id' (ou um campo similar) identifique unicamente o item DENTRO de um pedido.
-      - name: order_id
+      - name: CD_order
         description: "Chave estrangeira para slv_tb_orders e parte da chave primária composta"
         tests:
           - not_null
           - relationships:
               to: ref('slv_tb_orders')
-              field: order_id
-      - name: order_item_id # Assumindo que este é o ID sequencial/único do item dentro do pedido
+              field: CD_order
+      - name: NR_item
         description: "Identificador único do item dentro do pedido (ex: sequencial, ID da linha original) e parte da chave primária composta"
         tests:
           - not_null
-      - name: product_id
+      - name: CD_product
         description: "Chave estrangeira para slv_tb_products"
         tests:
           - not_null
           - relationships:
               to: ref('slv_tb_products')
-              field: product_id
-      - name: seller_id
+              field: CD_product
+      - name: CD_seller
         description: "Chave estrangeira para slv_tb_sellers"
         tests:
           - not_null
           - relationships:
               to: ref('slv_tb_sellers')
-              field: seller_id
-      - name: price
+              field: CD_seller
+      - name: VL_price
         description: "Preço do item"
         tests:
           - not_null
           - dbt_utils.accepted_range:
               min_value: 0
-      - name: freight_value
+      - name: VL_freight
         description: "Valor do frete para o item"
         tests:
           - not_null
@@ -58,36 +56,35 @@ models:
               min_value: 0
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: ['order_id', 'order_item_id'] # Ajustado para a chave primária natural composta
+          combination_of_columns: ['CD_order', 'NR_item']
 
   - name: slv_tb_order_payments
     description: "Tabela de pagamentos de pedidos na camada Silver."
     columns:
-      # A chave primária desta tabela é composta por order_id e payment_sequential
-      - name: order_id
+      - name: CD_order
         description: "Chave estrangeira para slv_tb_orders e parte da chave primária composta"
         tests:
           - not_null
           - relationships:
               to: ref('slv_tb_orders')
-              field: order_id
-      - name: payment_sequential
+              field: CD_order
+      - name: NR_payment
         description: "Número sequencial do pagamento para um mesmo pedido e parte da chave primária composta"
         tests:
           - not_null
-      - name: payment_type
+      - name: TP_payment
         description: "Tipo de pagamento"
         tests:
           - not_null
           - accepted_values:
               values: ['credit_card', 'boleto', 'voucher', 'debit_card', 'not_defined']
-      - name: payment_installments
+      - name: QT_installments
         description: "Número de parcelas"
         tests:
           - not_null
           - dbt_utils.accepted_range:
               min_value: 0
-      - name: payment_value
+      - name: VL_payment
         description: "Valor do pagamento"
         tests:
           - not_null
@@ -95,24 +92,24 @@ models:
               min_value: 0
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: ['order_id', 'payment_sequential'] # Chave primária natural composta
+          combination_of_columns: ['CD_order', 'NR_payment'] # Chave primária natural composta
 
   - name: slv_tb_orders
     description: "Tabela de pedidos na camada Silver, com status e datas tratadas."
     columns:
-      - name: order_id
+      - name: CD_order
         description: "Chave primária do pedido"
         tests:
           - not_null
           - unique
-      - name: customer_id
+      - name: CD_customer
         description: "Chave estrangeira para slv_tb_customers"
         tests:
           - not_null
           - relationships:
               to: ref('slv_tb_customers')
-              field: customer_id
-      - name: order_status
+              field: CD_customer
+      - name: FL_status
         description: "Status do pedido"
         tests:
           - not_null
@@ -122,12 +119,12 @@ models:
   - name: slv_tb_products
     description: "Tabela de produtos na camada Silver, com categorias e dimensões."
     columns:
-      - name: product_id
+      - name: CD_product
         description: "Chave primária do produto"
         tests:
           - not_null
           - unique
-      - name: product_category_name
+      - name: NM_category
         description: "Nome da categoria do produto"
         tests:
           - not_null
@@ -136,18 +133,18 @@ models:
     description: "Tabela de avaliações de pedidos na camada Silver."
     columns:
       # A chave primária desta tabela é composta por review_id e order_id
-      - name: review_id
+      - name: CD_review
         description: "Identificador da avaliação da fonte e parte da chave primária composta"
         tests:
           - not_null
-      - name: order_id
+      - name: CD_order
         description: "Chave estrangeira para slv_tb_orders e parte da chave primária composta"
         tests:
           - not_null
           - relationships:
               to: ref('slv_tb_orders')
-              field: order_id
-      - name: review_score
+              field: CD_order
+      - name: QT_score
         description: "Nota da avaliação"
         tests:
           - not_null
@@ -155,17 +152,17 @@ models:
               values: [1, 2, 3, 4, 5]
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: ['review_id', 'order_id'] # Chave primária natural composta
+          combination_of_columns: ['CD_review', 'CD_order'] # Chave primária natural composta
 
   - name: slv_tb_sellers
     description: "Tabela de vendedores na camada Silver."
     columns:
-      - name: seller_id
+      - name: CD_seller
         description: "Chave primária do vendedor"
         tests:
           - not_null
           - unique
-      - name: seller_state
+      - name: NM_state
         description: "Estado do vendedor" # Adicionada descrição
         tests:
           - not_null

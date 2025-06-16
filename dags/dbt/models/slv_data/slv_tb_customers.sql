@@ -1,7 +1,7 @@
 {{ config(
     materialized='table',
     alias='slv_tb_customers',
-    post_hook='ALTER TABLE slv_data.slv_tb_customers ADD PRIMARY KEY (customer_id)'
+    post_hook='ALTER TABLE slv_data.slv_tb_customers ADD PRIMARY KEY (CD_customer)'
 ) }}
 
 with source as (
@@ -10,9 +10,9 @@ with source as (
 )
 
 SELECT 
-    CAST(s.customer_id AS TEXT) AS customer_id,
-    CAST(s.customer_unique_id AS TEXT) AS customer_unique_id,
-    CAST(s.customer_zip_code_prefix AS BIGINT) AS customer_zip_code_prefix,
-    CAST(s.customer_city AS TEXT) AS customer_city,
-    CAST(s.customer_state AS TEXT) AS customer_state
+    CAST(s.customer_id AS TEXT) AS  CD_customer,
+    CAST(s.customer_unique_id AS TEXT) AS CD_customer_unique,
+    CAST(s.customer_zip_code_prefix AS BIGINT) AS CD_zip_code_prefix,
+    CAST(s.customer_city AS TEXT) AS NM_city,
+    CAST(s.customer_state AS TEXT) AS NM_state
 FROM source AS s
