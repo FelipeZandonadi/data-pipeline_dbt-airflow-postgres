@@ -2,21 +2,21 @@
     materialized='table',
     alias='agr_sellers',
     post_hook=[
-        'ALTER TABLE gld_data.agr_sellers ADD PRIMARY KEY (id_seller)',
-        'ALTER TABLE gld_data.agr_sellers ADD CONSTRAINT fk_key_state_city FOREIGN KEY (key_state_city) REFERENCES gld_data.dim_location(id_state_city_sk)',
+        'ALTER TABLE gld_data.agr_sellers ADD PRIMARY KEY (CD_seller)',
+        'ALTER TABLE gld_data.agr_sellers ADD CONSTRAINT fk_key_state_city FOREIGN KEY (SK_state_city) REFERENCES gld_data.dim_locations(SK_state_city)',
     ]
 ) }}
 
 WITH
-    sales_amount_and_sold_item_qt AS (
-        SELECT seller_id id_seller, sum(price) sales_amount, count(*) sold_item_qt
-        FROM {{ source('slv_data', 'slv_tb_order_items') }}
-        GROUP BY seller_id
+    sales_amount_and_qt_item AS (
+        SELECT cd_seller id_seller, sum(vl_price) sales_amount, count(*) sales_item_qt
+        FROM {{ source("slv_data", "slv_tb_order_items") }}
+        GROUP BY cd_seller
     ),
     per_seller_per_order AS (
-        SELECT seller_id id_seller, order_id id_order
-        FROM {{ source('slv_data', 'slv_tb_order_items') }}
-        GROUP BY seller_id, order_id
+        SELECT cd_seller id_seller, cd_order id_order
+        FROM {{ source("slv_data", "slv_tb_order_items") }}
+        GROUP BY cd_seller, cd_order
     ),
     sold_order_count AS (
         SELECT id_seller, count(*) count
@@ -24,12 +24,12 @@ WITH
         GROUP BY id_seller
     ),
     per_seller_per_customer AS (
-        SELECT sts.seller_id id_seller, stc.customer_unique_id
-        FROM {{ source('slv_data', 'slv_tb_sellers') }} sts
-        JOIN {{ source('slv_data', 'slv_tb_order_items') }} stoi on sts.seller_id = stoi.seller_id
-        JOIN {{ source('slv_data', 'slv_tb_orders') }} sto on sto.order_id = stoi.order_id
-        JOIN {{ source('slv_data', 'slv_tb_customers') }} stc on stc.customer_id = sto.customer_id
-        GROUP BY sts.seller_id, stc.customer_unique_id
+        SELECT sts.cd_seller id_seller, stc.cd_customer_unique
+        FROM {{ source("slv_data", "slv_tb_sellers") }} sts
+        JOIN {{ source("slv_data", "slv_tb_order_items") }} stoi on sts.cd_seller = stoi.cd_seller
+        JOIN {{ source("slv_data", "slv_tb_orders") }} sto on sto.cd_order = stoi.cd_order
+        JOIN {{ source("slv_data", "slv_tb_customers") }} stc on stc.cd_customer = sto.cd_customer
+        GROUP BY sts.cd_seller, stc.cd_customer_unique
     ),
     unique_customer_qt AS (
         SELECT id_seller, count(*) unique_customer_qt
@@ -37,13 +37,16 @@ WITH
         GROUP BY id_seller
     )
 SELECT
-    sts.seller_id id_seller,
-    sts.seller_state || '-' || sts.seller_city key_state_city,
-    soc.count total_sold_order_qt,
-    saasiq.sold_item_qt total_sold_item_qt,
-    ucq.unique_customer_qt total_unique_customer_qt,
-    saasiq.sales_amount total_sales_amount
-FROM {{ source('slv_data', 'slv_tb_sellers') }} sts
-JOIN sales_amount_and_sold_item_qt saasiq ON sts.seller_id = saasiq.id_seller
-JOIN sold_order_count soc ON sts.seller_id = soc.id_seller
-JOIN unique_customer_qt ucq ON sts.seller_id = ucq.id_seller
+    sts.cd_seller AS CD_seller,
+    sts.nm_state || '-' || sts.nm_city AS SK_state_city,
+    soc.count AS QT_orders,
+    saasiq.sales_item_qt AS QT_items_sold,
+    ucq.unique_customer_qt AS QT_unique_customer,
+    saasiq.sales_amount AS VL_gmv,
+    saasiq.sales_amount/soc.count VL_avg_ticket_order,
+    saasiq.sales_amount/saasiq.sales_item_qt AS VL_avg_ticket_item,
+    saasiq.sales_amount/ucq.unique_customer_qt AS VL_avg_ticket_customer
+FROM {{ source("slv_data", "slv_tb_sellers") }} sts
+JOIN sales_amount_and_qt_item saasiq ON sts.cd_seller = saasiq.id_seller
+JOIN sold_order_count soc ON sts.cd_seller = soc.id_seller
+JOIN unique_customer_qt ucq ON sts.cd_seller = ucq.id_seller

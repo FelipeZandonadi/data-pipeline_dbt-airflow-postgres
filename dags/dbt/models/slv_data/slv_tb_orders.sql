@@ -26,6 +26,6 @@ SELECT
     CAST(s.order_approved_at AS TIMESTAMP) AS DH_approved,
     CAST(s.order_delivered_carrier_date AS TIMESTAMP) AS DH_delivered_carrier,
     CAST(s.order_delivered_customer_date AS TIMESTAMP) AS DH_delivered_customer,
-    CAST(s.order_estimated_delivery_date AS TIMESTAMP) AS DH_estimeted_delivery,
+    CAST(s.order_estimated_delivery_date AS TIMESTAMP) AS DH_estimated_delivery,
     CAST(s.order_status AS TEXT) AS FL_status
 FROM source AS s

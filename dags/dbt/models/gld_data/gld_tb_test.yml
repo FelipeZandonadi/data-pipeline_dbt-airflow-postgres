@@ -1,314 +1,313 @@
 version: 2
 
 models:
-  - name: dim_date
+  - name: dim_dates
     description: "Tabela de dimensão de datas, com cada registro representando um dia único."
     columns:
-      - name: id_date_sk
-        description: "Chave primária da dimensão de data, no formato YYYYMMDD."
-        tests:
-          - not_null
-          - unique
-          # Adicionando um teste de padrão para garantir o formato YYYYMMDD
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: "^[0-9]{8}$"
-      - name: date
+      - name: SK_date
         description: "Data completa no formato DATE."
         tests:
+          - unique
           - not_null
-      - name: year
+      - name: CD_period_year
         description: "Ano extraído da data."
         tests:
           - not_null
-      - name: month
+      - name: CD_period_month
         description: "Mês extraído da data (1-12)."
         tests:
           - not_null
           - accepted_values:
               values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-      - name: day
+      - name: CD_period_day
         description: "Dia extraído da data (1-31)."
         tests:
-          - not_null
-      - name: day_week # Mantido como day_week, mas o script SQL original tem day_of_week. Ajustar se necessário.
-        description: "Nome do dia da semana."
-        tests:
-          - not_null
           - accepted_values:
-              values: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-      - name: quarter
+              values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+          - not_null
+      - name: CD_period_quarter
         description: "Trimestre do ano (1-4)."
         tests:
           - not_null
           - accepted_values:
               values: [1, 2, 3, 4] # Assumindo que o macro 'day_of_week' e 'catch_date_information' preenchem corretamente estes valores.
+      - name: NM_day_week
+        description: "Nome do dia da semana."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
-  - name: dim_location
+  - name: dim_locations
     description: "Tabela de dimensão de localidades, representando combinações únicas de estado e cidade."
     columns:
-      - name: id_state_city_sk
+      - name: SK_state_city
         description: "Chave primária da dimensão de localidade, concatenando estado e cidade (ex: SP-Sao Paulo)."
         tests:
           - not_null
           - unique
-      - name: state
+      - name: NM_state
         description: "Sigla do estado."
         tests:
           - not_null
           # - dbt_expectations.expect_column_value_lengths_to_equal: # Exemplo se estados forem sempre 2 chars
           #     value: 2
-      - name: city
+      - name: NM_city
         description: "Nome da cidade."
         tests:
           - not_null
 
-  - name: dim_product_category
+  - name: dim_product_categories
     description: "Tabela de dimensão de categorias de produtos."
     columns:
-      - name: id_product_category_sk
+      - name: SK_product_category
         description: "Chave primária da dimensão de categoria de produto (MD5 hash do nome da categoria)."
         tests:
           - not_null
           - unique
-      - name: product_category_name
+      - name: NM_category
         description: "Nome da categoria do produto."
         tests:
           - not_null
 
-  - name: dim_product
+  - name: dim_products
     description: "Tabela de dimensão de produtos."
     columns:
-      - name: id_product
+      - name: CD_product
         description: "Chave primária da dimensão de produto (ID original do produto)."
         tests:
           - not_null
           - unique
-      - name: key_product_category
+      - name: SK_product_category
         description: "Chave estrangeira para a dimensão de categoria de produto."
         tests:
           - not_null
           - relationships:
-              to: ref('dim_product_category')
-              field: id_product_category_sk
-      - name: weight_g
+              to: ref('dim_product_categories')
+              field: SK_product_category
+      - name: VL_weight_g
         description: "Peso do produto em gramas."
         tests:
-          - dbt_utils.accepted_range: # Ou apenas not_null se preferir
+          - dbt_utils.accepted_range:
               min_value: 0
-      - name: length_cm
+      - name: VL_length_cm
         description: "Comprimento do produto em centímetros."
         tests:
           - dbt_utils.accepted_range:
               min_value: 0
-      - name: height_cm
+      - name: VL_height_cm
         description: "Altura do produto em centímetros."
         tests:
           - dbt_utils.accepted_range:
               min_value: 0
-      - name: width_cm
+      - name: VL_width_cm
         description: "Largura do produto em centímetros."
         tests:
           - dbt_utils.accepted_range:
               min_value: 0
 
-  - name: agr_customer
+  - name: agr_customers
     description: "Tabela agregada com métricas por cliente."
     columns:
-      - name: id_customer
+      - name: CD_customer
         description: "Identificador único do cliente (customer_unique_id)."
         tests:
           - not_null
           - unique
-      - name: key_state_city
+      - name: SK_state_city
         description: "Chave estrangeira para a dimensão de localidade (estado-cidade)."
         tests:
           - not_null
           - relationships:
-              to: ref('dim_location')
-              field: id_state_city_sk
-      - name: qt_items_purchased
+              to: ref('dim_locations')
+              field: SK_state_city
+      - name: QT_items_purchased
         description: "Quantidade total de itens comprados pelo cliente."
         tests:
           - dbt_utils.accepted_range:
               min_value: 0
-      - name: qt_orders
+      - name: QT_orders
         description: "Quantidade total de pedidos feitos pelo cliente."
         tests:
-          - not_null
           - dbt_utils.accepted_range:
               min_value: 1 # Um cliente agregado deve ter pelo menos 1 pedido
-      - name: tpv
+      - name: VL_tpv
         description: "Valor total de compra (Total Purchase Value) do cliente."
         tests:
           - dbt_utils.accepted_range:
               min_value: 0
-      - name: average_ticket
+      - name: VL_avg_ticket_order
         description: "Ticket médio por pedido do cliente."
         tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+      - name: VL_avg_ticket_item
+        description: "Ticket médio por item do cliente"
+        tests: 
           - dbt_utils.accepted_range:
               min_value: 0
 
   - name: agr_sellers
     description: "Tabela agregada com métricas por vendedor."
     columns:
-      - name: id_seller
+      - name: CD_seller
         description: "Identificador único do vendedor."
         tests:
           - not_null
           - unique
-      - name: key_state_city
+      - name: SK_state_city
         description: "Chave estrangeira para a dimensão de localidade (estado-cidade do vendedor)."
         tests:
           - not_null
           - relationships:
-              to: ref('dim_location')
-              field: id_state_city_sk
-      - name: total_sold_order_qt
+              to: ref('dim_locations')
+              field: SK_state_city
+      - name: QT_orders
         description: "Quantidade total de pedidos vendidos pelo vendedor."
         tests:
           - not_null
           - dbt_utils.accepted_range:
               min_value: 0
-      - name: total_sold_item_qt
+      - name: QT_items_sold
         description: "Quantidade total de itens vendidos pelo vendedor."
         tests:
           - not_null
           - dbt_utils.accepted_range:
               min_value: 0
-      - name: total_unique_customer_qt
+      - name: QT_unique_customer
         description: "Quantidade total de clientes únicos atendidos pelo vendedor."
         tests:
           - not_null
           - dbt_utils.accepted_range:
               min_value: 0
-      - name: total_sales_amount
+      - name: VL_gmv
         description: "Valor total das vendas do vendedor."
         tests:
           - not_null
           - dbt_utils.accepted_range:
               min_value: 0
+      - name: VL_avg_ticket_order
+        description: "Valor do ticket médio por pedido"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+      - name: VL_avg_ticket_item
+        description: "Valor do ticket médio por item"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+      - name: Vl_avg_ticket_customer
+        description: "valor do ticket médio por cliente"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0 
 
-  - name: fact_orders
+  - name: fact_order_payments
     description: "Tabela fato contendo informações sobre cada pedido."
     columns:
-      - name: id_order
+      - name: SK_order_payment
         description: "Identificador único do pedido."
         tests:
           - not_null
           - unique
-      - name: id_customer
+      - name: CD_customer
         description: "Identificador do cliente associado ao pedido."
         tests:
           - not_null
           - relationships:
-              to: ref('agr_customer') # Referencia a tabela agregada de clientes
-              field: id_customer
-      - name: key_purchase_date
-        description: "Chave para dim_date referente à data da compra."
+              to: ref('agr_customers')
+              field: CD_customer
+      - name: DT_purchase
+        description: "Chave para dim_dates referente à data da compra."
         tests:
           - relationships: # Permite nulos se a data puder ser nula, caso contrário not_null
-              to: ref('dim_date')
-              field: id_date_sk
-      - name: key_approved_date
-        description: "Chave para dim_date referente à data de aprovação."
+              to: ref('dim_dates')
+              field: SK_date
+      - name: DT_approved
+        description: "Chave para dim_dates referente à data de aprovação."
         tests:
           - relationships:
-              to: ref('dim_date')
-              field: id_date_sk
-      - name: key_delivered_carrier_date
-        description: "Chave para dim_date referente à data de entrega à transportadora."
+              to: ref('dim_dates')
+              field: SK_date
+      - name: DT_delivered_carrier
+        description: "Chave para dim_dates referente à data de entrega à transportadora."
         tests:
           - relationships:
-              to: ref('dim_date')
-              field: id_date_sk
-      - name: key_delivered_customer_date
-        description: "Chave para dim_date referente à data de entrega ao cliente."
+              to: ref('dim_dates')
+              field: SK_date
+      - name: DT_delivered_customer
+        description: "Chave para dim_dates referente à data de entrega ao cliente."
         tests:
           - relationships:
-              to: ref('dim_date')
-              field: id_date_sk
-      - name: key_estimated_delivery_date
-        description: "Chave para dim_date referente à data estimada de entrega."
+              to: ref('dim_dates')
+              field: SK_date
+      - name: DT_estimated_delivery
+        description: "Chave para dim_dates referente à data estimada de entrega."
         tests:
           - relationships:
-              to: ref('dim_date')
-              field: id_date_sk
-      - name: order_status
+              to: ref('dim_dates')
+              field: SK_date
+      - name: FL_order_status
         description: "Status atual do pedido."
         tests:
           - not_null
           - accepted_values: # Valores baseados nos status comuns em e-commerce
               values: ['delivered', 'shipped', 'canceled', 'invoiced', 'processing', 'approved', 'created', 'unavailable', 'returned']
-      - name: payments_installments_amount
+      - name: QT_installments
         description: "Número de parcelas do pagamento."
         tests:
           - dbt_utils.accepted_range:
               min_value: 0
-      - name: qt_order_items
-        description: "Quantidade de itens no pedido."
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-      - name: total_purchase_price
+      - name: VL_payments
         description: "Valor total da compra do pedido."
         tests:
           - dbt_utils.accepted_range:
               min_value: 0
-      - name: is_customer_first_order
-        description: "Booleano indicando se é o primeiro pedido do cliente."
+      - name: TP_payments
+        description: "Representa o tipo de pagamento que foi utilizado"
         tests:
           - not_null
           - accepted_values:
-              values: [true, false]
+              values: ['not_defined', 'boleto', 'debit_card', 'voucher', 'credit_card']
 
-  - name: fact_order_product
+  - name: fact_order_items
     description: "Tabela fato detalhando os produtos de cada pedido."
     columns:
-      - name: id_order_product_sk
+      - name: SK_order_item
         description: "Chave primária da tabela, concatenando id_order e id_product."
         tests:
           - not_null
           - unique
-      - name: id_order
-        description: "Chave estrangeira para a tabela fact_orders."
-        tests:
-          - not_null
-          - relationships:
-              to: ref('fact_orders')
-              field: id_order
-      - name: id_product
+      - name: CD_product
         description: "Chave estrangeira para a tabela dim_product."
         tests:
-          - not_null
           - relationships:
-              to: ref('dim_product')
-              field: id_product
-      - name: id_seller
+              to: ref('dim_products')
+              field: CD_product
+      - name: CD_seller
         description: "Chave estrangeira para a tabela agr_sellers."
         tests:
           - not_null
           - relationships:
               to: ref('agr_sellers')
-              field: id_seller
-      - name: product_qty_each
-        description: "Quantidade deste produto específico no pedido."
+              field: CD_seller
+      - name: DT_shipping_limit
+        description: "Data limite de envio do produto"
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 1
-      - name: product_price_each
+          - relationships:
+              to: ref('dim_dates')
+              field: SK_date
+      - name: VL_price
         description: "Preço unitário do produto no momento da compra."
         tests:
           - not_null
           - dbt_utils.accepted_range:
               min_value: 0
-      - name: product_price_total
-        description: "Preço total para este produto no pedido (quantidade * preço unitário)."
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-      - name: product_shipping_cost
+      - name: VL_shipping
         description: "Custo de frete para este produto no pedido."
         tests:
           - not_null
@@ -318,43 +317,31 @@ models:
   - name: fact_order_reviews
     description: "Tabela fato para as avaliações dos pedidos."
     columns:
-      - name: id_review_order_sk
+      - name: SK_order_review
         description: "Chave primária da tabela, concatenando id_review e id_order."
         tests:
           - not_null
           - unique
-      - name: id_review
-        description: "Identificador único da avaliação."
+      - name: DT_creation
+        description: "Chave para dim_dates referente à data de criação da avaliação."
         tests:
           - not_null
-      - name: id_order
-        description: "Chave estrangeira para a tabela fact_orders."
-        tests:
-          - not_null
-          - relationships:
-              to: ref('fact_orders')
-              field: id_order
-      - name: key_creation_date
-        description: "Chave para dim_date referente à data de criação da avaliação."
-        tests:
           - relationships: # Permite nulos se a data puder ser nula
-              to: ref('dim_date')
-              field: id_date_sk
-      - name: key_answer_date
-        description: "Chave para dim_date referente à data de resposta da avaliação."
+              to: ref('dim_dates')
+              field: SK_date
+      - name: DT_answer
+        description: "Chave para dim_dates referente à data de resposta da avaliação."
         tests:
           - relationships: # Permite nulos, pois nem toda avaliação tem resposta
-              to: ref('dim_date')
-              field: id_date_sk
-      - name: score
+              to: ref('dim_dates')
+              field: SK_date
+      - name: QT_score
         description: "Nota da avaliação (geralmente 1 a 5)."
         tests:
           - not_null
           - accepted_values:
-              values: [1, 2, 3, 4, 5] # Ajustar se o range for diferente
-      - name: comment_title
+              values: [1, 2, 3, 4, 5]
+      - name: DS_comment_title
         description: "Título do comentário da avaliação (pode ser nulo)."
-        # Nenhum teste de not_null, pois pode ser opcional
-      - name: comment_message
+      - name: DS_comment_message
         description: "Mensagem do comentário da avaliação (pode ser nulo)."
-        # Nenhum teste de not_null, pois pode ser opcional

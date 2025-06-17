@@ -2,25 +2,22 @@
     materialized='table',
     alias='fact_order_reviews',
     post_hook=[
-        'ALTER TABLE gld_data.fact_order_reviews ADD PRIMARY KEY (id_review_order_sk)',
-        'ALTER TABLE gld_data.fact_order_reviews ADD CONSTRAINT fk_id_order FOREIGN KEY (id_order) REFERENCES gld_data.fact_orders(id_order)',
-        'ALTER TABLE gld_data.fact_order_reviews ADD CONSTRAINT fk_id_date FOREIGN KEY (key_creation_date) REFERENCES gld_data.dim_date(id_date_sk)',
-        'ALTER TABLE gld_data.fact_order_reviews ADD CONSTRAINT fk_id_date_answer FOREIGN KEY (key_answer_date) REFERENCES gld_data.dim_date(id_date_sk)',
+        'ALTER TABLE gld_data.fact_order_reviews ADD PRIMARY KEY (SK_order_review)',
+        'ALTER TABLE gld_data.fact_order_reviews ADD CONSTRAINT fk_sk_date_answer FOREIGN KEY (DT_answer) REFERENCES gld_data.dim_dates(SK_date)',
+        'ALTER TABLE gld_data.fact_order_reviews ADD CONSTRAINT fk_sk_date_creation FOREIGN KEY (DT_creation) REFERENCES gld_data.dim_dates(SK_date)',
     ]
 ) }}
 
 
 WITH source AS (
     SELECT *
-    FROM slv_data.slv_tb_order_reviews
+    FROM {{ source("slv_data", "slv_tb_order_reviews") }}
 )
 SELECT
-    s.review_id || '-' || s.order_id AS id_review_order_sk,
-    S.review_id AS  id_review,
-    s.order_id AS id_order,
-    to_char(CAST(s.review_creation_date AS DATE), 'YYYYMMDD') AS key_creation_date,
-    to_char(CAST(s.review_answer_timestamp AS DATE), 'YYYYMMDD') AS key_answer_date,
-    s.review_score AS score,
-    s.review_comment_title AS comment_title,
-    S.review_comment_message AS comment_message
+    s.cd_order || '-' || s.cd_review AS SK_order_review,
+    CAST(s.dh_answer AS DATE) AS DT_answer,
+    CAST(s.dh_creation AS DATE) AS DT_creation,
+    s.qt_score AS QT_score,
+    s.ds_comment_title AS DS_comment_title,
+    S.ds_comment_message AS DS_comment_message
 FROM source s
